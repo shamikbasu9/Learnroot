@@ -1,0 +1,24 @@
+{
+  "name": "learnroot-admin",
+  "version": "1.0.0",
+  "description": "Learnroot Admin Dashboard - School Management System",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "client": "cd frontend && npm run dev",
+    "server": "cd backend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "start": "cd backend && npm start"
+  },
+  "keywords": [
+    "education",
+    "admin",
+    "dashboard",
+    "school-management"
+  ],
+  "author": "Learnroot Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
