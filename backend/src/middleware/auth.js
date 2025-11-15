@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 import { pool } from '../config/database.js'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key'
 
 // Authenticate token middleware
 const authenticateToken = async (req, res, next) => {

@@ -83,6 +83,19 @@ const initializeDatabase = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )
     `)
+
+    // Grades table
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS grades (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100) NOT NULL UNIQUE,
+        segment ENUM('primary', 'secondary', 'sr_secondary') NOT NULL,
+        subjects JSON,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `)
     
     // Classes table (can reference teachers now)
     await connection.query(`
@@ -193,6 +206,7 @@ const initializeDatabase = async () => {
         ALTER TABLE teachers 
         ADD COLUMN IF NOT EXISTS user_id INT UNIQUE,
         ADD COLUMN IF NOT EXISTS role ENUM('teacher', 'admin') DEFAULT 'teacher',
+        ADD COLUMN IF NOT EXISTS grade VARCHAR(50),
         ADD FOREIGN KEY IF NOT EXISTS (user_id) REFERENCES users(id) ON DELETE SET NULL
       `)
       console.log('✅ Teachers table migration completed')

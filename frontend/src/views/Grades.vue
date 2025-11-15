@@ -5,10 +5,10 @@
       <div class="flex justify-between items-center">
         <div>
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-            Subjects Management
+            Grades Management
           </h1>
           <p class="text-gray-600 dark:text-gray-400">
-            Manage subjects and their properties
+            Manage grade levels and subjects
           </p>
         </div>
         <button
@@ -17,37 +17,8 @@
           class="btn btn-primary"
         >
           <Plus class="h-5 w-5 mr-2" />
-          Add Subject
+          Add Grade
         </button>
-      </div>
-
-      <!-- Filters -->
-      <div class="card p-4">
-        <div class="flex flex-wrap gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Stream
-            </label>
-            <select v-model="filters.stream" @change="fetchSubjects" class="form-input">
-              <option value="">All Streams</option>
-              <option value="science">Science</option>
-              <option value="commerce">Commerce</option>
-              <option value="humanities">Humanities</option>
-              <option value="general">General</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Type
-            </label>
-            <select v-model="filters.type" @change="fetchSubjects" class="form-input">
-              <option value="">All Types</option>
-              <option value="core">Core</option>
-              <option value="elective">Elective</option>
-              <option value="optional">Optional</option>
-            </select>
-          </div>
-        </div>
       </div>
 
       <!-- Permission warning for non-admin users -->
@@ -60,29 +31,26 @@
           </div>
           <div class="ml-3">
             <p class="text-sm text-yellow-800 dark:text-yellow-200">
-              You have view-only access. Only school administrators can add, edit, or delete subjects.
+              You have view-only access. Only school administrators can add, edit, or delete grades.
             </p>
           </div>
         </div>
       </div>
 
-      <!-- Subjects List -->
+      <!-- Grades List -->
       <div class="card">
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead class="bg-gray-50 dark:bg-gray-800">
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Subject Name
+                  Grade Name
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Code
+                  Segment
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Type
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Stream
+                  Subjects
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Description
@@ -94,68 +62,73 @@
             </thead>
             <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
               <tr v-if="loading">
-                <td colspan="6" class="px-6 py-4 text-center">
+                <td colspan="5" class="px-6 py-4 text-center">
                   <div class="spinner"></div>
                 </td>
               </tr>
-              <tr v-else-if="subjects.length === 0">
-                <td colspan="6" class="px-6 py-8 text-center">
+              <tr v-else-if="grades.length === 0">
+                <td colspan="5" class="px-6 py-8 text-center">
                   <div class="text-gray-500 dark:text-gray-400">
-                    <BookOpen class="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No subjects found</p>
+                    <GraduationCap class="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No grades found</p>
                     <button
                       v-if="isSchoolAdmin"
                       @click="showAddModal = true"
                       class="mt-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                     >
-                      Add your first subject
+                      Add your first grade
                     </button>
                   </div>
                 </td>
               </tr>
-              <tr v-for="subject in subjects" :key="subject.id">
+              <tr v-for="grade in grades" :key="grade.id">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm font-medium text-gray-900 dark:text-white">
-                    {{ subject.name }}
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-900 dark:text-white">
-                    {{ subject.code }}
+                    {{ grade.name }}
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span
                     class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                    :class="getTypeClass(subject.type)"
+                    :class="getSegmentClass(grade.segment)"
                   >
-                    {{ subject.type }}
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span
-                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                    :class="getStreamClass(subject.stream)"
-                  >
-                    {{ subject.stream }}
+                    {{ grade.segment }}
                   </span>
                 </td>
                 <td class="px-6 py-4">
                   <div class="text-sm text-gray-900 dark:text-white">
-                    {{ subject.description || '-' }}
+                    <span
+                      v-for="(subject, index) in grade.subjects_details"
+                      :key="subject.id"
+                      class="inline-block mr-2 mb-1"
+                    >
+                      <span
+                        class="inline-flex px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                      >
+                        {{ subject.name }}
+                      </span>
+                    </span>
+                    <span v-if="!grade.subjects_details || grade.subjects_detail.length === 0" class="text-gray-400">
+                      No subjects
+                    </span>
+                  </div>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="text-sm text-gray-900 dark:text-white">
+                    {{ grade.description || '-' }}
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <button
                     v-if="isSchoolAdmin"
-                    @click="editSubject(subject)"
+                    @click="editGrade(grade)"
                     class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
                   >
                     Edit
                   </button>
                   <button
                     v-if="isSchoolAdmin"
-                    @click="deleteSubject(subject)"
+                    @click="deleteGrade(grade)"
                     class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                   >
                     Delete
@@ -173,60 +146,54 @@
           <div class="fixed inset-0 bg-black opacity-50" @click="closeModal"></div>
           <div class="relative bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6">
             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-              {{ showEditModal ? 'Edit Subject' : 'Add New Subject' }}
+              {{ showEditModal ? 'Edit Grade' : 'Add New Grade' }}
             </h3>
             
             <form @submit.prevent="handleSubmit">
               <div class="space-y-4">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Subject Name
+                    Grade Name
                   </label>
                   <input
                     v-model="formData.name"
                     type="text"
                     required
                     class="form-input"
-                    placeholder="e.g., Mathematics, Physics"
+                    placeholder="e.g., Grade 1, Class 10A"
                   />
                 </div>
 
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Subject Code
+                    Segment
                   </label>
-                  <input
-                    v-model="formData.code"
-                    type="text"
-                    required
-                    class="form-input"
-                    placeholder="e.g., MATH, PHY"
-                  />
-                </div>
-
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Type
-                  </label>
-                  <select v-model="formData.type" required class="form-input">
-                    <option value="">Select type</option>
-                    <option value="core">Core</option>
-                    <option value="elective">Elective</option>
-                    <option value="optional">Optional</option>
+                  <select v-model="formData.segment" required class="form-input">
+                    <option value="">Select segment</option>
+                    <option value="primary">Primary</option>
+                    <option value="secondary">Secondary</option>
+                    <option value="sr_secondary">Senior Secondary</option>
                   </select>
                 </div>
 
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Stream
+                    Subjects
                   </label>
-                  <select v-model="formData.stream" required class="form-input">
-                    <option value="">Select stream</option>
-                    <option value="science">Science</option>
-                    <option value="commerce">Commerce</option>
-                    <option value="humanities">Humanities</option>
-                    <option value="general">General</option>
-                  </select>
+                  <div class="space-y-2 max-h-40 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-md p-2">
+                    <div v-for="subject in availableSubjects" :key="subject.id" class="flex items-center">
+                      <input
+                        type="checkbox"
+                        :id="'subject-' + subject.id"
+                        v-model="formData.subjects"
+                        :value="subject.id"
+                        class="mr-2"
+                      />
+                      <label :for="'subject-' + subject.id" class="text-sm">
+                        {{ subject.name }} ({{ subject.type }})
+                      </label>
+                    </div>
+                  </div>
                 </div>
 
                 <div>
@@ -237,7 +204,7 @@
                     v-model="formData.description"
                     rows="3"
                     class="form-input"
-                    placeholder="Subject description..."
+                    placeholder="Grade description..."
                   ></textarea>
                 </div>
               </div>
@@ -271,7 +238,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth.js'
 import axios from 'axios'
 import DashboardLayout from '../components/DashboardLayout.vue'
-import { Plus, BookOpen } from 'lucide-vue-next'
+import { Plus, GraduationCap } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 
@@ -279,74 +246,58 @@ const isSchoolAdmin = computed(() =>
   authStore.user?.role === 'school_admin' || authStore.user?.role === 'super_admin'
 )
 
+const grades = ref([])
 const subjects = ref([])
 const loading = ref(true)
 const submitting = ref(false)
 
 const showAddModal = ref(false)
 const showEditModal = ref(false)
-const editingSubject = ref(null)
-
-const filters = ref({
-  stream: '',
-  type: ''
-})
+const editingGrade = ref(null)
 
 const formData = ref({
   name: '',
-  code: '',
-  type: '',
-  stream: '',
+  segment: '',
+  subjects: [],
   description: ''
 })
 
-const getTypeClass = (type) => {
+const availableSubjects = computed(() => subjects.value)
+
+const getSegmentClass = (segment) => {
   const classes = {
-    core: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-    elective: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-    optional: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+    primary: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+    secondary: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+    sr_secondary: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
   }
-  return classes[type] || 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+  return classes[segment] || 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
 }
 
-const getStreamClass = (stream) => {
-  const classes = {
-    science: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-    commerce: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-    humanities: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200',
-    general: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+const fetchGrades = async () => {
+  try {
+    const response = await axios.get('/grades')
+    grades.value = response.data.data || []
+  } catch (error) {
+    console.error('Error fetching grades:', error)
+  } finally {
+    loading.value = false
   }
-  return classes[stream] || 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
 }
 
 const fetchSubjects = async () => {
   try {
-    loading.value = true
-    const params = new URLSearchParams()
-    
-    if (filters.value.stream) {
-      params.append('stream', filters.value.stream)
-    }
-    
-    if (filters.value.type) {
-      params.append('type', filters.value.type)
-    }
-    
-    const response = await axios.get(`/subjects?${params.toString()}`)
+    const response = await axios.get('/subjects')
     subjects.value = response.data.data || []
   } catch (error) {
     console.error('Error fetching subjects:', error)
-  } finally {
-    loading.value = false
   }
 }
 
 const resetForm = () => {
   formData.value = {
     name: '',
-    code: '',
-    type: '',
-    stream: '',
+    segment: '',
+    subjects: [],
     description: ''
   }
 }
@@ -354,18 +305,17 @@ const resetForm = () => {
 const closeModal = () => {
   showAddModal.value = false
   showEditModal.value = false
-  editingSubject.value = null
+  editingGrade.value = null
   resetForm()
 }
 
-const editSubject = (subject) => {
-  editingSubject.value = subject
+const editGrade = (grade) => {
+  editingGrade.value = grade
   formData.value = {
-    name: subject.name,
-    code: subject.code,
-    type: subject.type,
-    stream: subject.stream,
-    description: subject.description || ''
+    name: grade.name,
+    segment: grade.segment,
+    subjects: grade.subjects || [],
+    description: grade.description || ''
   }
   showEditModal.value = true
 }
@@ -375,34 +325,34 @@ const handleSubmit = async () => {
   
   try {
     if (showEditModal.value) {
-      await axios.put(`/subjects/${editingSubject.value.id}`, formData.value)
+      await axios.put(`/grades/${editingGrade.value.id}`, formData.value)
     } else {
-      await axios.post('/subjects', formData.value)
+      await axios.post('/grades', formData.value)
     }
     
-    await fetchSubjects()
+    await fetchGrades()
     closeModal()
   } catch (error) {
-    console.error('Error saving subject:', error)
+    console.error('Error saving grade:', error)
   } finally {
     submitting.value = false
   }
 }
 
-const deleteSubject = async (subject) => {
-  if (!confirm(`Are you sure you want to delete "${subject.name}"?`)) {
+const deleteGrade = async (grade) => {
+  if (!confirm(`Are you sure you want to delete "${grade.name}"?`)) {
     return
   }
   
   try {
-    await axios.delete(`/subjects/${subject.id}`)
-    await fetchSubjects()
+    await axios.delete(`/grades/${grade.id}`)
+    await fetchGrades()
   } catch (error) {
-    console.error('Error deleting subject:', error)
+    console.error('Error deleting grade:', error)
   }
 }
 
-onMounted(() => {
-  fetchSubjects()
+onMounted(async () => {
+  await Promise.all([fetchGrades(), fetchSubjects()])
 })
 </script>

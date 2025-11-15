@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import { initializeDatabase } from './config/database.js'
 import authRoutes from './routes/auth.js'
 import classRoutes from './routes/classes.js'
 import subjectRoutes from './routes/subjects.js'
@@ -56,6 +57,13 @@ app.use('*', (req, res) => {
   })
 })
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 Learnroot API server running on port ${PORT}`)
+  
+  // Initialize database tables and migrations
+  try {
+    await initializeDatabase()
+  } catch (error) {
+    console.error('❌ Database initialization failed:', error.message)
+  }
 })

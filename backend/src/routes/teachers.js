@@ -11,11 +11,11 @@ router.get('/', authenticateToken, async (req, res) => {
   try {
     const [teachers] = await pool.execute(`
       SELECT u.id, u.name, u.email, u.created_at, t.phone, t.gender, 
-             t.qualification, t.experience_years, t.subjects, t.joining_date, 
+             t.qualification, t.experience_years, t.grade, t.subjects, t.joining_date, 
              t.salary, t.address, t.status
       FROM users u
       LEFT JOIN teachers t ON u.id = t.user_id
-      WHERE u.role = 'teacher'
+      WHERE u.role IN ('moderator', 'teacher')
       ORDER BY u.created_at DESC
     `)
     
@@ -77,16 +77,16 @@ router.post('/', authenticateToken, authorizeRole('school_admin'), [
       // Create user account
       const [userResult] = await connection.execute(
         'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-        [name, email, hashedPassword, 'teacher']
+        [name, email, hashedPassword, 'moderator']
       )
 
       const userId = userResult.insertId
 
       // Create teacher profile
       await connection.execute(
-        `INSERT INTO teachers (user_id, subjects, joining_date) 
-         VALUES (?, ?, CURDATE())`,
-        [userId, `${grade} - ${subject}`]
+        `INSERT INTO teachers (user_id, name, email, grade, subjects, joining_date, role) 
+         VALUES (?, ?, ?, ?, ?, CURDATE(), 'teacher')`,
+        [userId, name, email, grade, subject]
       )
 
       await connection.commit()
@@ -139,8 +139,8 @@ router.put('/:id', authenticateToken, authorizeRole('school_admin'), [
 
     // Check if teacher exists
     const [teachers] = await pool.execute(
-      'SELECT id FROM users WHERE id = ? AND role = ?',
-      [id, 'teacher']
+      'SELECT id FROM users WHERE id = ? AND role IN (?, ?)',
+      [id, 'moderator', 'teacher']
     )
 
     if (teachers.length === 0) {
@@ -188,10 +188,26 @@ router.put('/:id', authenticateToken, authorizeRole('school_admin'), [
 
     // Update teacher profile
     if (grade || subject) {
-      await pool.execute(
-        'UPDATE teachers SET subjects = ? WHERE user_id = ?',
-        [`${grade} - ${subject}`, id]
-      )
+      const updateFields = []
+      const updateValues = []
+      
+      if (grade) {
+        updateFields.push('grade = ?')
+        updateValues.push(grade)
+      }
+      
+      if (subject) {
+        updateFields.push('subjects = ?')
+        updateValues.push(subject)
+      }
+      
+      if (updateFields.length > 0) {
+        updateValues.push(id)
+        await pool.execute(
+          `UPDATE teachers SET ${updateFields.join(', ')} WHERE user_id = ?`,
+          updateValues
+        )
+      }
     }
 
     res.json({
@@ -214,8 +230,8 @@ router.delete('/:id', authenticateToken, authorizeRole('school_admin'), async (r
 
     // Check if teacher exists
     const [teachers] = await pool.execute(
-      'SELECT id FROM users WHERE id = ? AND role = ?',
-      [id, 'teacher']
+      'SELECT id FROM users WHERE id = ? AND role IN (?, ?)',
+      [id, 'moderator', 'teacher']
     )
 
     if (teachers.length === 0) {
@@ -248,11 +264,11 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
     const [teachers] = await pool.execute(`
       SELECT u.id, u.name, u.email, u.created_at, t.phone, t.gender, 
-             t.qualification, t.experience_years, t.subjects, t.joining_date, 
+             t.qualification, t.experience_years, t.grade, t.subjects, t.joining_date, 
              t.salary, t.address, t.status
       FROM users u
       LEFT JOIN teachers t ON u.id = t.user_id
-      WHERE u.id = ? AND u.role = 'teacher'
+      WHERE u.id = ? AND u.role IN ('moderator', 'teacher')
     `, [id])
 
     if (teachers.length === 0) {

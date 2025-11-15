@@ -50,13 +50,13 @@
                   Email
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Grade & Subject
+                  Grade
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Subject
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Status
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Joined Date
                 </th>
                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Actions
@@ -65,14 +65,14 @@
             </thead>
             <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
               <tr v-if="loading">
-                <td colspan="6" class="px-6 py-4 text-center">
+                <td colspan="7" class="px-6 py-4 text-center">
                   <div class="flex justify-center">
                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                   </div>
                 </td>
               </tr>
               <tr v-else-if="teachers.length === 0">
-                <td colspan="6" class="px-6 py-8 text-center">
+                <td colspan="7" class="px-6 py-8 text-center">
                   <GraduationCap class="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <p class="text-gray-500 dark:text-gray-400">No teachers added yet</p>
                   <button
@@ -108,8 +108,11 @@
                   <div class="text-sm text-gray-900 dark:text-white">{{ teacher.email }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900 dark:text-white">{{ getGradeName(teacher.grade) }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-900 dark:text-white">
-                    {{ teacher.subjects || 'Not assigned' }}
+                    {{ getSubjectName(teacher.subject) }}
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
@@ -216,9 +219,9 @@
                       class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     >
                       <option value="">Select Grade</option>
-                      <option value="Primary">Primary</option>
-                      <option value="Secondary">Secondary</option>
-                      <option value="Sr Secondary">Sr Secondary</option>
+                      <option v-for="grade in grades" :key="grade.id" :value="grade.id">
+                        {{ grade.name }}
+                      </option>
                     </select>
                   </div>
 
@@ -226,13 +229,23 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Subject *
                     </label>
-                    <input
+                    <select
                       v-model="form.subject"
-                      type="text"
                       required
+                      :disabled="!form.grade"
                       class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                      placeholder="Mathematics, Science, etc."
-                    />
+                    >
+                      <option value="">Select Subject</option>
+                      <option v-for="subject in availableSubjects" :key="subject.id" :value="subject.id">
+                        {{ subject.name }}
+                      </option>
+                    </select>
+                    <p v-if="!form.grade" class="mt-1 text-sm text-gray-500">
+                      Please select a grade first
+                    </p>
+                    <p v-else-if="availableSubjects.length === 0" class="mt-1 text-sm text-gray-500">
+                      No subjects available for this grade
+                    </p>
                   </div>
                 </div>
               </div>
@@ -284,6 +297,8 @@ const authStore = useAuthStore()
 const isSchoolAdmin = computed(() => authStore.userRole === 'school_admin')
 
 const teachers = ref([])
+const grades = ref([])
+const subjects = ref([])
 const loading = ref(false)
 const showAddModal = ref(false)
 const editingTeacher = ref(null)
@@ -300,15 +315,62 @@ const form = ref({
 
 const fetchTeachers = async () => {
   loading.value = true
+  error.value = ''
+  
   try {
     const response = await axios.get(`${API_BASE_URL}/teachers`)
     teachers.value = response.data.data || []
   } catch (err) {
     console.error('Error fetching teachers:', err)
-    error.value = 'Failed to load teachers'
+    if (err.response?.status === 401) {
+      error.value = 'Please login to view teachers'
+    } else if (err.response?.status === 403) {
+      error.value = 'You do not have permission to view teachers'
+    } else {
+      // For other errors, don't show them automatically
+      // error.value = 'Failed to load teachers'
+    }
   } finally {
     loading.value = false
   }
+}
+
+const fetchGrades = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/grades`)
+    grades.value = response.data.data || []
+  } catch (err) {
+    console.error('Error fetching grades:', err)
+  }
+}
+
+const fetchSubjects = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/subjects`)
+    subjects.value = response.data.data || []
+  } catch (err) {
+    console.error('Error fetching subjects:', err)
+  }
+}
+
+const availableSubjects = computed(() => {
+  if (!form.value.grade) return []
+  const selectedGrade = grades.value.find(g => g.id === form.value.grade)
+  if (!selectedGrade || !selectedGrade.subjects) return []
+  
+  return subjects.value.filter(subject => 
+    selectedGrade.subjects.includes(subject.id)
+  )
+})
+
+const getGradeName = (gradeId) => {
+  const grade = grades.value.find(g => g.id === gradeId)
+  return grade ? grade.name : gradeId || 'Not assigned'
+}
+
+const getSubjectName = (subjectId) => {
+  const subject = subjects.value.find(s => s.id === subjectId)
+  return subject ? subject.name : subjectId || 'Not assigned'
 }
 
 const handleSubmit = async () => {
@@ -354,8 +416,8 @@ const editTeacher = (teacher) => {
     name: teacher.name,
     email: teacher.email,
     password: '',
-    grade: teacher.subjects?.split(' - ')[0] || '',
-    subject: teacher.subjects?.split(' - ')[1] || ''
+    grade: teacher.grade || '',
+    subject: teacher.subject || ''
   }
 }
 
@@ -407,5 +469,7 @@ const formatDate = (dateString) => {
 
 onMounted(() => {
   fetchTeachers()
+  fetchGrades()
+  fetchSubjects()
 })
 </script>
