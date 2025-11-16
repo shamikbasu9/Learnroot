@@ -14,9 +14,30 @@ router.get('/', authenticateToken, async (req, res) => {
       ORDER BY g.segment, g.name
     `)
     
+    // Parse subjects JSON strings back to arrays and fetch subject details
+    const gradesWithParsedSubjects = await Promise.all(grades.map(async (grade) => {
+      const subjectIds = grade.subjects ? JSON.parse(grade.subjects) : []
+      
+      let subjectsDetails = []
+      if (subjectIds.length > 0) {
+        const placeholders = subjectIds.map(() => '?').join(',')
+        const [subjects] = await pool.execute(
+          `SELECT id, name FROM subjects WHERE id IN (${placeholders}) ORDER BY name`,
+          subjectIds
+        )
+        subjectsDetails = subjects
+      }
+      
+      return {
+        ...grade,
+        subjects: subjectIds,
+        subjects_details: subjectsDetails
+      }
+    }))
+    
     res.json({
       success: true,
-      data: grades
+      data: gradesWithParsedSubjects
     })
   } catch (error) {
     console.error('Get grades error:', error)
@@ -45,9 +66,26 @@ router.get('/:id', authenticateToken, async (req, res) => {
       })
     }
 
+    // Parse subjects JSON string back to array and fetch subject details
+    const grade = grades[0]
+    const subjectIds = grade.subjects ? JSON.parse(grade.subjects) : []
+    
+    let subjectsDetails = []
+    if (subjectIds.length > 0) {
+      const placeholders = subjectIds.map(() => '?').join(',')
+      const [subjects] = await pool.execute(
+        `SELECT id, name FROM subjects WHERE id IN (${placeholders}) ORDER BY name`,
+        subjectIds
+      )
+      subjectsDetails = subjects
+    }
+    
+    grade.subjects = subjectIds
+    grade.subjects_details = subjectsDetails
+
     res.json({
       success: true,
-      data: grades[0]
+      data: grade
     })
   } catch (error) {
     console.error('Get grade error:', error)

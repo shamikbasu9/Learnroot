@@ -108,7 +108,7 @@
                         {{ subject.name }}
                       </span>
                     </span>
-                    <span v-if="!grade.subjects_details || grade.subjects_detail.length === 0" class="text-gray-400">
+                    <span v-if="!grade.subjects_details || grade.subjects_details.length === 0" class="text-gray-400">
                       No subjects
                     </span>
                   </div>
@@ -159,7 +159,7 @@
                     v-model="formData.name"
                     type="text"
                     required
-                    class="form-input"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                     placeholder="e.g., Grade 1, Class 10A"
                   />
                 </div>
@@ -168,7 +168,7 @@
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Segment
                   </label>
-                  <select v-model="formData.segment" required class="form-input">
+                  <select v-model="formData.segment" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400">
                     <option value="">Select segment</option>
                     <option value="primary">Primary</option>
                     <option value="secondary">Secondary</option>
@@ -203,7 +203,7 @@
                   <textarea
                     v-model="formData.description"
                     rows="3"
-                    class="form-input"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                     placeholder="Grade description..."
                   ></textarea>
                 </div>

@@ -104,7 +104,7 @@
             <!-- Notifications -->
             <button class="relative p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
               <Bell class="h-5 w-5" />
-              <span class="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
+              <span v-if="hasNotifications" class="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
             </button>
 
             <!-- Dark mode toggle -->
@@ -131,6 +131,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import api from '../utils/api'
 import {
   BookOpen,
   LayoutDashboard,
@@ -159,6 +160,8 @@ const authStore = useAuthStore()
 const sidebarOpen = ref(false)
 const isMobile = ref(false)
 const isDark = ref(false)
+const recentAnnouncements = ref([])
+const hasNotifications = ref(false)
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -173,6 +176,18 @@ const navigation = [
   { name: 'Reports', href: '/reports', icon: FileText },
   { name: 'Settings', href: '/settings', icon: Settings }
 ]
+
+// Fetch recent announcements for notifications
+const fetchNotifications = async () => {
+  try {
+    const response = await api.get('/dashboard')
+    recentAnnouncements.value = response.data.data?.recentAnnouncements || []
+    hasNotifications.value = recentAnnouncements.value.length > 0
+  } catch (error) {
+    console.error('Error fetching notifications:', error)
+    hasNotifications.value = false
+  }
+}
 
 const handleLogout = async () => {
   await authStore.logout()
@@ -202,6 +217,9 @@ onMounted(() => {
     isDark.value = true
     document.documentElement.classList.add('dark')
   }
+  
+  // Fetch notifications
+  fetchNotifications()
 })
 
 onUnmounted(() => {

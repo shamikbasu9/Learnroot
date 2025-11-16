@@ -28,7 +28,7 @@
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Stream
             </label>
-            <select v-model="filters.stream" @change="fetchSubjects" class="form-input">
+            <select v-model="filters.stream" @change="fetchSubjects" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400">
               <option value="">All Streams</option>
               <option value="science">Science</option>
               <option value="commerce">Commerce</option>
@@ -40,7 +40,7 @@
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Type
             </label>
-            <select v-model="filters.type" @change="fetchSubjects" class="form-input">
+            <select v-model="filters.type" @change="fetchSubjects" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400">
               <option value="">All Types</option>
               <option value="core">Core</option>
               <option value="elective">Elective</option>
@@ -186,7 +186,7 @@
                     v-model="formData.name"
                     type="text"
                     required
-                    class="form-input"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                     placeholder="e.g., Mathematics, Physics"
                   />
                 </div>
@@ -199,7 +199,7 @@
                     v-model="formData.code"
                     type="text"
                     required
-                    class="form-input"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                     placeholder="e.g., MATH, PHY"
                   />
                 </div>
@@ -208,7 +208,7 @@
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Type
                   </label>
-                  <select v-model="formData.type" required class="form-input">
+                  <select v-model="formData.type" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400">
                     <option value="">Select type</option>
                     <option value="core">Core</option>
                     <option value="elective">Elective</option>
@@ -220,7 +220,7 @@
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Stream
                   </label>
-                  <select v-model="formData.stream" required class="form-input">
+                  <select v-model="formData.stream" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400">
                     <option value="">Select stream</option>
                     <option value="science">Science</option>
                     <option value="commerce">Commerce</option>
@@ -236,7 +236,7 @@
                   <textarea
                     v-model="formData.description"
                     rows="3"
-                    class="form-input"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                     placeholder="Subject description..."
                   ></textarea>
                 </div>
@@ -269,7 +269,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth.js'
-import axios from 'axios'
+import api from '../utils/api'
 import DashboardLayout from '../components/DashboardLayout.vue'
 import { Plus, BookOpen } from 'lucide-vue-next'
 
@@ -332,7 +332,7 @@ const fetchSubjects = async () => {
       params.append('type', filters.value.type)
     }
     
-    const response = await axios.get(`/subjects?${params.toString()}`)
+    const response = await api.get(`/subjects?${params.toString()}`)
     subjects.value = response.data.data || []
   } catch (error) {
     console.error('Error fetching subjects:', error)
@@ -375,9 +375,9 @@ const handleSubmit = async () => {
   
   try {
     if (showEditModal.value) {
-      await axios.put(`/subjects/${editingSubject.value.id}`, formData.value)
+      await api.put(`/subjects/${editingSubject.value.id}`, formData.value)
     } else {
-      await axios.post('/subjects', formData.value)
+      await api.post('/subjects', formData.value)
     }
     
     await fetchSubjects()
@@ -395,7 +395,7 @@ const deleteSubject = async (subject) => {
   }
   
   try {
-    await axios.delete(`/subjects/${subject.id}`)
+    await api.delete(`/subjects/${subject.id}`)
     await fetchSubjects()
   } catch (error) {
     console.error('Error deleting subject:', error)
