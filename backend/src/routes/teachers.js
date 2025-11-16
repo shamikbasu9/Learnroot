@@ -1,8 +1,8 @@
-import express from 'express'
-import { body, validationResult } from 'express-validator'
-import bcrypt from 'bcryptjs'
-import { pool } from '../config/database.js'
-import { authenticateToken, authorizeRole } from '../middleware/auth.js'
+const express = require('express')
+const { body, validationResult } = require('express-validator')
+const bcrypt = require('bcryptjs')
+const { pool } = require('../config/database.js')
+const { authenticateToken, authorizeRole } = require('../middleware/auth.js')
 
 const router = express.Router()
 
@@ -10,13 +10,11 @@ const router = express.Router()
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const [teachers] = await pool.execute(`
-      SELECT u.id, u.name, u.email, u.created_at, t.phone, t.gender, 
-             t.qualification, t.experience_years, t.grade, t.subjects, t.joining_date, 
-             t.salary, t.address, t.status
-      FROM users u
-      LEFT JOIN teachers t ON u.id = t.user_id
-      WHERE u.role IN ('moderator', 'teacher')
-      ORDER BY u.created_at DESC
+      SELECT t.*, u.id as user_id, u.name as user_name, u.email as user_email, u.created_at
+      FROM teachers t
+      LEFT JOIN users u ON t.user_id = u.id
+      WHERE t.role IN ('moderator', 'teacher') OR t.role IS NULL
+      ORDER BY t.created_at DESC
     `)
     
     res.json({
@@ -291,4 +289,4 @@ router.get('/:id', authenticateToken, async (req, res) => {
   }
 })
 
-export default router
+module.exports = router

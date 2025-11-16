@@ -1,17 +1,19 @@
-import express from 'express'
-import cors from 'cors'
-import dotenv from 'dotenv'
-import { initializeDatabase } from './config/database.js'
-import authRoutes from './routes/auth.js'
-import classRoutes from './routes/classes.js'
-import subjectRoutes from './routes/subjects.js'
-import teacherRoutes from './routes/teachers.js'
-import studentRoutes from './routes/students.js'
-import timetableRoutes from './routes/timetable.js'
-import calendarRoutes from './routes/calendar.js'
-import announcementRoutes from './routes/announcements.js'
-import reportRoutes from './routes/reports.js'
-import settingRoutes from './routes/settings.js'
+const express = require('express')
+const cors = require('cors')
+const dotenv = require('dotenv')
+const { initializeDatabase } = require('./config/database.js')
+const authRoutes = require('./routes/auth.js')
+const classRoutes = require('./routes/classes.js')
+const subjectRoutes = require('./routes/subjects.js')
+const teacherRoutes = require('./routes/teachers.js')
+const studentRoutes = require('./routes/students.js')
+const timetableRoutes = require('./routes/timetable.js')
+const calendarRoutes = require('./routes/calendar.js')
+const announcementRoutes = require('./routes/announcements.js')
+const reportRoutes = require('./routes/reports.js')
+const settingRoutes = require('./routes/settings.js')
+const gradeRoutes = require('./routes/grades.js')
+const dashboardRoutes = require('./routes/dashboard.js')
 
 dotenv.config()
 
@@ -34,6 +36,8 @@ app.use('/api/calendar', calendarRoutes)
 app.use('/api/announcements', announcementRoutes)
 app.use('/api/reports', reportRoutes)
 app.use('/api/settings', settingRoutes)
+app.use('/api/grades', gradeRoutes)
+app.use('/api/dashboard', dashboardRoutes)
 
 // Health check
 app.get('/api/health', (req, res) => {

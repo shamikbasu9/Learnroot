@@ -1,4 +1,4 @@
-import express from 'express'
+const express = require('express')
 const router = express.Router()
 
 // TODO: Implement ${route} routes
@@ -11,4 +11,4 @@ router.get('/', (req, res) => {
   })
 })
 
-export default router
+module.exports = router

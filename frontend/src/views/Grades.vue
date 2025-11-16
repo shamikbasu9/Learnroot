@@ -236,7 +236,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth.js'
-import axios from 'axios'
+import api from '../utils/api'
 import DashboardLayout from '../components/DashboardLayout.vue'
 import { Plus, GraduationCap } from 'lucide-vue-next'
 
@@ -275,7 +275,7 @@ const getSegmentClass = (segment) => {
 
 const fetchGrades = async () => {
   try {
-    const response = await axios.get('/grades')
+    const response = await api.get('/grades')
     grades.value = response.data.data || []
   } catch (error) {
     console.error('Error fetching grades:', error)
@@ -286,7 +286,7 @@ const fetchGrades = async () => {
 
 const fetchSubjects = async () => {
   try {
-    const response = await axios.get('/subjects')
+    const response = await api.get('/subjects')
     subjects.value = response.data.data || []
   } catch (error) {
     console.error('Error fetching subjects:', error)
@@ -325,9 +325,9 @@ const handleSubmit = async () => {
   
   try {
     if (showEditModal.value) {
-      await axios.put(`/grades/${editingGrade.value.id}`, formData.value)
+      await api.put(`/grades/${editingGrade.value.id}`, formData.value)
     } else {
-      await axios.post('/grades', formData.value)
+      await api.post('/grades', formData.value)
     }
     
     await fetchGrades()
@@ -345,7 +345,7 @@ const deleteGrade = async (grade) => {
   }
   
   try {
-    await axios.delete(`/grades/${grade.id}`)
+    await api.delete(`/grades/${grade.id}`)
     await fetchGrades()
   } catch (error) {
     console.error('Error deleting grade:', error)

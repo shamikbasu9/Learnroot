@@ -1,7 +1,7 @@
-import express from 'express'
-import { body, validationResult } from 'express-validator'
-import { pool } from '../config/database.js'
-import { authenticateToken, authorizeRole } from '../middleware/auth.js'
+const express = require('express')
+const { body, validationResult } = require('express-validator')
+const { pool } = require('../config/database.js')
+const { authenticateToken, authorizeRole } = require('../middleware/auth.js')
 
 const router = express.Router()
 
@@ -9,11 +9,8 @@ const router = express.Router()
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const [grades] = await pool.execute(`
-      SELECT g.*, 
-             JSON_ARRAYAGG(s.name) as subject_names
+      SELECT g.*
       FROM grades g
-      LEFT JOIN subjects s ON JSON_CONTAINS(g.subjects, CAST(s.id AS JSON))
-      GROUP BY g.id
       ORDER BY g.segment, g.name
     `)
     
@@ -36,12 +33,9 @@ router.get('/:id', authenticateToken, async (req, res) => {
     const { id } = req.params
 
     const [grades] = await pool.execute(`
-      SELECT g.*, 
-             JSON_ARRAYAGG(s.name) as subject_names
+      SELECT g.*
       FROM grades g
-      LEFT JOIN subjects s ON JSON_CONTAINS(g.subjects, CAST(s.id AS JSON))
       WHERE g.id = ?
-      GROUP BY g.id
     `, [id])
 
     if (grades.length === 0) {
@@ -281,4 +275,4 @@ router.delete('/:id', authenticateToken, authorizeRole('school_admin', 'super_ad
   }
 })
 
-export default router
+module.exports = router

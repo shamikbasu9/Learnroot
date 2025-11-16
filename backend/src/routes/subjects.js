@@ -1,7 +1,7 @@
-import express from 'express'
-import { body, validationResult } from 'express-validator'
-import { pool } from '../config/database.js'
-import { authenticateToken, authorizeRole } from '../middleware/auth.js'
+const express = require('express')
+const { body, validationResult } = require('express-validator')
+const { pool } = require('../config/database.js')
+const { authenticateToken, authorizeRole } = require('../middleware/auth.js')
 
 const router = express.Router()
 
@@ -11,11 +11,9 @@ router.get('/', authenticateToken, async (req, res) => {
     const { stream, type } = req.query
     
     let query = `
-      SELECT s.*, 
-             JSON_ARRAYAGG(g.name) as grade_names
+      SELECT s.*
       FROM subjects s
-      LEFT JOIN grades g ON JSON_CONTAINS(g.subjects, CAST(s.id AS JSON))
-    `
+      `
     
     const conditions = []
     const params = []
@@ -289,4 +287,4 @@ router.delete('/:id', authenticateToken, authorizeRole('school_admin', 'super_ad
   }
 })
 
-export default router
+module.exports = router

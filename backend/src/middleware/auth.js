@@ -1,5 +1,5 @@
-import jwt from 'jsonwebtoken'
-import { pool } from '../config/database.js'
+const jwt = require('jsonwebtoken')
+const { pool } = require('../config/database.js')
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key'
 
@@ -61,4 +61,4 @@ const authorizeRole = (...allowedRoles) => {
   }
 }
 
-export { authenticateToken, authorizeRole }
+module.exports = { authenticateToken, authorizeRole }

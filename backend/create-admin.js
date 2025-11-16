@@ -1,5 +1,5 @@
-import bcrypt from 'bcryptjs'
-import { pool } from './src/config/database.js'
+const bcrypt = require('bcryptjs')
+const { pool } = require('./src/config/database.js')
 
 const createAdmin = async () => {
   try {

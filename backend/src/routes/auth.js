@@ -1,8 +1,8 @@
-import express from 'express'
-import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
-import { body, validationResult } from 'express-validator'
-import { pool } from '../config/database.js'
+const express = require('express')
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
+const { body, validationResult } = require('express-validator')
+const { pool } = require('../config/database.js')
 
 const router = express.Router()
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key'
@@ -264,4 +264,4 @@ router.post('/reset-password', [
   }
 })
 
-export default router
+module.exports = router
